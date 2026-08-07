@@ -259,8 +259,15 @@ end
 local function getParams(x, y)
   local p = WindowManager.LayoutParams()
   p.format = PixelFormat.RGBA_8888
-  p.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-  p.type = (Build.VERSION.SDK_INT >= 26) and WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY or WindowManager.LayoutParams.TYPE_PHONE
+  
+  -- TANGGALIN ANG MGA FLAGS NA NAGDO-DULOT NG RE-LAYOUT AT DAGDAGAN NG NO_LIMITS / NOT_FOCUSABLE
+  p.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE 
+          | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+          
+  p.type = (Build.VERSION.SDK_INT >= 26) 
+           and WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY 
+           or WindowManager.LayoutParams.TYPE_PHONE
+           
   p.width = WindowManager.LayoutParams.WRAP_CONTENT
   p.height = WindowManager.LayoutParams.WRAP_CONTENT
   p.gravity = Gravity.TOP | Gravity.LEFT
@@ -268,6 +275,7 @@ local function getParams(x, y)
   p.y = y
   return p
 end
+
 
 local p_menu = getParams(0, 0)
 local p_icon = getParams(0, 100)
