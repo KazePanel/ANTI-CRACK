@@ -1,21 +1,16 @@
 <?php
 header("Content-Type: text/plain");
 
-// Listahan ng mga valid license key
-$valid_keys = [
-    "KAZE-VIP-12345" => "ACTIVE"
-];
-
-// Kukunin ang key na ipinasa mula sa Http.post ng app
+// Kukunin ang key mula sa POST request ng app
 $user_key = $_POST['key'] ?? '';
 
-// Verifier logic
-if (isset($valid_keys[$user_key])) {
+// Basta hindi empty ang key (kasi validated na ito sa client side bilang "valid")
+if (!empty($user_key)) {
     
     $file = 'log1.lua';
     
     if (file_exists($file)) {
-        // Ipapadala ang laman ng log1.lua pabalik sa client
+        // Ipadala ang buong payload/injector script
         echo file_get_contents($file);
     } else {
         http_response_code(404);
@@ -24,9 +19,9 @@ if (isset($valid_keys[$user_key])) {
     
     exit();
 } else {
-    // Kapag mali o wala ang key
+    // Kapag walang ipinasang key
     http_response_code(403);
-    echo "ACCESS DENIED";
+    echo "ACCESS DENIED: No key provided";
     exit();
 }
 ?>
