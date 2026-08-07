@@ -98,7 +98,13 @@ import "android.view.MotionEvent"
 
 
 
-
+-- 🟢 4. SAFE FULLSCREEN & ORIENTATION SETTINGS (NO RE-LAYOUT)
+pcall(function()
+  activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+  activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN)
+  activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+  activity.getWindow().setStatusBarColor(0xFF000000)
+end)
 
 
 
@@ -238,48 +244,32 @@ function createToastBackground()
   return gd
 end
 
-function showToast(msg) Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show() end
-
-local wm = activity.getSystemService(Context.WINDOW_SERVICE)
--- ==========================================
--- 1. CRITICAL IMPORTS & INITIALIZATION
--- ==========================================
 local wm = activity.getSystemService(Context.WINDOW_SERVICE)
 local idleHandler = Handler()
 local isMenuOpen = false
-local win_icon = loadlayout(icon)
-local win_menu = loadlayout(floating)
 
--- ==========================================
--- 2. THE RAINBOW BORDER SYSTEM (FIXED)
--- ==========================================
+-- 🟢 6. THE RAINBOW BORDER SYSTEM
 local function applyRainbowBorder(view)
-  -- 1. Setup Colors (White, Pink, Light Blue, then White again)
-  -- Mas manipis na Stroke Width para sa eleganteng look
+  if not view then return end
   local colors = {
-    0xFFFFFFFF, -- White center line
-    0xFFFF00FF, -- Pink glow
-    0xFF00FFEE, -- Light Cyan/Blue glow
-    0xFFFFFFFF -- White loop
+    0xFFFFFFFF,
+    0xFFFF00FF,
+    0xFF00FFEE,
+    0xFFFFFFFF
   }
-
-  -- Para sa RadialGradient, kailangan nating i-convert sa int[] Java array
   local colorArray = int(colors)
-
-  -- 2. Create the Shape
   local shape = ShapeDrawable(OvalShape())
   local paint = shape.getPaint()
 
   paint.setStyle(Paint.Style.STROKE)
-  paint.setStrokeWidth(5) -- Mas manipis na border gaya nung sa pic
+  paint.setStrokeWidth(5)
   paint.setAntiAlias(true)
 
-  -- 3. Animation Logic gamit ang Matrix (Dito iikot ang kulay)
   local matrix = Matrix()
   local animator = ValueAnimator.ofFloat(float{0, 360})
-  animator.setDuration(4000) -- Mas mabagal na ikot
+  animator.setDuration(4000)
   animator.setRepeatCount(ValueAnimator.INFINITE)
-  animator.setInterpolator(nil) -- Smooth constant speed
+  animator.setInterpolator(nil)
 
   animator.addUpdateListener(ValueAnimator.AnimatorUpdateListener{
     onAnimationUpdate = function(a)
@@ -287,12 +277,8 @@ local function applyRainbowBorder(view)
       local w, h = view.getWidth(), view.getHeight()
 
       if w > 0 and h > 0 then
-        -- Eto ang totoong Sweep Gradient para sa circular border
-        -- Gagamit tayo ng SweepGradient para sa paikot na color transition
         import "android.graphics.SweepGradient"
         local shader = SweepGradient(w/2, h/2, colorArray, nil)
-
-        -- I-rotate ang gradient gamit ang Matrix
         matrix.setRotate(angle, w/2, h/2)
         shader.setLocalMatrix(matrix)
 
@@ -305,23 +291,9 @@ local function applyRainbowBorder(view)
   animator.start()
 end
 
--- I-apply agad ang border setup
 if iconf then applyRainbowBorder(iconf) end
 
--- ==========================================
--- 4. IDLE BLUR SYSTEM
--- ==========================================
-local win_icon = loadlayout(icon)
-local win_menu = loadlayout(floating)
-
--- I-apply ang rainbow border sa 'iconf' (CardView sa icon.aly)
-if iconf then
-  applyRainbowBorder(iconf)
-end
-
--- ==========================================
--- 4. IDLE BLUR SYSTEM
--- ==========================================
+-- 🟢 7. IDLE BLUR SYSTEM
 local idleRunnable = Runnable({
   run = function()
     if not isMenuOpen and win_icon then
