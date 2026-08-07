@@ -1,27 +1,30 @@
 <?php
 header("Content-Type: text/plain");
 
+// Listahan ng mga valid license key
 $valid_keys = [
     "KAZE-VIP-12345" => "ACTIVE"
 ];
 
+// Kukunin ang key na ipinasa mula sa Http.post ng app
 $user_key = $_POST['key'] ?? '';
 
-// Check kung valid ang key
+// Verifier logic
 if (isset($valid_keys[$user_key])) {
     
-    // Hanapin ang login.lua sa loob ng folder
     $file = 'log1.lua';
     
     if (file_exists($file)) {
-        // I-echo ang laman ng file pabalik sa app
+        // Ipapadala ang laman ng log1.lua pabalik sa client
         echo file_get_contents($file);
     } else {
-        echo "Error: File login.lua not found on server.";
+        http_response_code(404);
+        echo "Error: File log1.lua not found on server.";
     }
     
     exit();
 } else {
+    // Kapag mali o wala ang key
     http_response_code(403);
     echo "ACCESS DENIED";
     exit();
