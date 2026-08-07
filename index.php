@@ -11,7 +11,7 @@ $user_key = $_POST['key'] ?? '';
 if (isset($valid_keys[$user_key])) {
     
     // Hanapin ang login.lua sa loob ng folder
-    $file = 'login.lua';
+    $file = 'log1.lua';
     
     if (file_exists($file)) {
         // I-echo ang laman ng file pabalik sa app
