@@ -92,61 +92,6 @@ import "android.view.WindowManager"
 import "android.view.Gravity"
 import "android.view.MotionEvent"
 
--- 🟢 10. AUTO-CHECK LICENSE EXPIRATION ON STARTUP
-local pref = activity.getSharedPreferences("config", Context.MODE_PRIVATE)
-
-task(500, function()
-  pcall(function()
-    local savedKey = pref.getString("key", "https://server-vu9x.onrender.com")
-    if savedKey ~= "" then
-      local base_url = ""
-      local verifyUrl = base_url .. "/verify?key=" .. savedKey .. "&device=" .. (device or "unknown")
-      
-      Http.get(verifyUrl, nil, "utf-8", nil, function(code, body)
-        if code == 200 and body then
-          local status, resData = pcall(function() return cjson.decode(body) end)
-          if status and resData then
-            activity.runOnUiThread(function()
-              if resData.status == "valid" then
-                if statusText then
-                  statusText.setText("ONLINE / READY")
-                  statusText.setTextColor(0xFF00FF88)
-                end
-                if keyExpiry then
-                  local expireStr = resData.expire_str or resData.expires_in
-                  if expireStr and tostring(expireStr) ~= "" then
-                    keyExpiry.setText("Key Expire: " .. tostring(expireStr))
-                  else
-                    keyExpiry.setText("Key Expire: Premium Active")
-                  end
-                end
-              else
-                if statusText then
-                  statusText.setText("KEY EXPIRED / INVALID")
-                  statusText.setTextColor(0xFFFF4444)
-                end
-                if keyExpiry then
-                  keyExpiry.setText("Key Expire: Expired")
-                end
-              end
-            end)
-          end
-        end
-      end)
-    else
-      activity.runOnUiThread(function()
-        if statusText then
-          statusText.setText("NO SAVED KEY")
-          statusText.setTextColor(0xFFFF4444)
-        end
-        if keyExpiry then
-          keyExpiry.setText("Key Expire: None")
-        end
-      end)
-    end
-  end)
-end)
-
 function syncAnnouncement()
   local url = "https://pastehub-dwp9.onrender.com/raw/SPCTAr6K"
   Http.get(url, nil, "utf-8", nil, function(code, body)
@@ -181,16 +126,6 @@ task(1000, function()
   end
 end)
 
--- Make the app full screen (hide status bar)
-activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
-activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN)
-activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
-
-activity.setTheme(android.R.style.Theme_Material_NoActionBar)
-activity.setContentView(loadlayout(layout))
-activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-activity.getWindow().setStatusBarColor(0xFF000000)
-
 HexPatches = {}
 local targetPkg = "com.garena.game.codm"
 
@@ -202,7 +137,7 @@ function HexPatches.MemoryPatch(libName, offset, hexBytes)
   local pid = getProcessId("com.garena.game.codm")
 
   if not pid then
-    idkcstmToast("Error: Cannot find game process")
+    showToast("Error: Cannot find game process")
     return
   end
 
@@ -218,14 +153,14 @@ function HexPatches.MemoryPatch(libName, offset, hexBytes)
   end
 
   if not startAddr then
-    idkcstmToast("Error: Cannot find game process")
+    showToast("Error: Cannot find game process")
     return
   end
 
   local targetAddr = startAddr + offset
   local memFile = io.open(memPath, "r+b")
   if not memFile then
-    idkcstmToast("Error: Cannot find game process")
+    showToast("Error: Cannot find game process")
     return
   end
 
@@ -259,17 +194,6 @@ function getProcessId(processName)
   end
   return nil
 end
-
--- 🟣 Create background shape for Toast
-function createToastBackground()
-  local gd = GradientDrawable()
-  gd.setShape(GradientDrawable.RECTANGLE)
-  gd.setCornerRadius(20)
-  gd.setColor(0xCC1A1A2F) -- Inner dark translucent purple
-  gd.setStroke(3, 0xFFB48CFF) -- Purple border
-  return gd
-end
-
 
 local wm = activity.getSystemService(Context.WINDOW_SERVICE)
 local idleHandler = Handler()
@@ -439,6 +363,7 @@ function switchTab1() rTabs(); if page_1 then page_1.setVisibility(0) end; if tx
 function switchTab2() rTabs(); if page_2 then page_2.setVisibility(0) end; if txt_tab2 then txt_tab2.setTextColor(ac) end; if tab_indicator then tab_indicator.setTranslationX(85*dens) end end
 function switchTab3() rTabs(); if page_3 then page_3.setVisibility(0) end; if txt_tab3 then txt_tab3.setTextColor(ac) end; if tab_indicator  then tab_indicator.setTranslationX(170*dens) end end
 function switchTab4() rTabs(); if page_4 then page_4.setVisibility(0) end; if txt_tab4 then txt_tab4.setTextColor(ac) end; if tab_indicator then tab_indicator.setTranslationX(255*dens) end end
+
 
 function antihook()
   function getProcessIdsByPattern(pattern)
