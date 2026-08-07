@@ -1,0 +1,5 @@
+# I-block ang direktang pag-download sa log1.lua mula sa Browser
+<Files "log1.lua">
+    Order Allow,Deny
+    Deny from all
+</Files>
