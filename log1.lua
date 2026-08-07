@@ -1,11 +1,32 @@
 require "import"
-import "http" -- 🟢 DAGDAG: Para sa stand-alone APK compatibility!
 
--- Siguraduhin ding parehong Http at http ay accessible
+-- 🟢 1. HTTP MODULE SAFE SETUP
+pcall(function() import "http" end)
 Http = Http or http
 http = http or Http
 
-require "import"
+-- 🟢 2. JSON & CJSON SAFE FALLBACK SETUP
+pcall(function() import "json" end)
+pcall(function() import "cjson" end)
+
+json = json or JSON
+cjson = cjson or json
+
+-- Fallback kung sakaling walang CJSON o JSON module sa runtime ng APK
+if not cjson or not json then
+  pcall(function()
+    import "org.json.JSONObject"
+    import "org.json.JSONArray"
+    local jsonHandler = {
+      decode = function(str) return JSONObject(str) end,
+      encode = function(obj) return tostring(obj) end
+    }
+    cjson = cjson or jsonHandler
+    json = json or jsonHandler
+  end)
+end
+
+-- 🟢 3. ANDROID UI, GRAPHICS, AT SYSTEM IMPORTS
 import "android.app.*"
 import "android.os.*"
 import "android.widget.*"
@@ -27,6 +48,7 @@ import "android.graphics.RadialGradient"
 import "android.graphics.SweepGradient"
 import "android.graphics.Paint"
 import "android.graphics.Matrix"
+
 -- System / Device
 import "android.provider.Settings"
 import "android.provider.Settings$Secure"
@@ -36,49 +58,40 @@ import "android.content.res.ColorStateList"
 import "android.os.Environment"
 import "android.os.Handler"
 import "android.os.Build"
+
 -- Media / Audio
 import "android.media.MediaPlayer"
 import "android.media.AudioManager"
 import "android.speech.tts.TextToSpeech"
+
 -- Animation
 import "android.view.animation.TranslateAnimation"
 import "android.animation.ValueAnimator"
--- Network / Internet
+
+-- Network / File IO / Java
 import "java.net.URL"
 import "java.net.HttpURLConnection"
 import "java.net.URLEncoder"
 import "android.net.ConnectivityManager"
--- File / IO
 import "java.io.File"
 import "java.io.FileInputStream"
 import "java.io.DataOutputStream"
 import "java.io.BufferedReader"
 import "java.io.InputStreamReader"
--- Java Core
 import "java.lang.String"
 import "java.lang.Runtime"
 import "java.util.Locale"
+
 -- AndLua Layout Files
 import "layout"
 import "floating"
 import "icon"
 import "watermarkz"
--- HTTP / JSON
-import "http"
-import "json"
-import "cjson"
--- Others
+
 import "android.widget.Toast"
 import "android.view.WindowManager"
 import "android.view.Gravity"
 import "android.view.MotionEvent"
-
-import "java.io.File"
-import "java.io.FileInputStream"
-import "java.io.DataOutputStream"
-import "java.net.HttpURLConnection"
-import "java.net.URL"
-import "java.lang.String"
 
 
 
