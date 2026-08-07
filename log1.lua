@@ -983,7 +983,7 @@ function autoBypass()
   HexPatches.MemoryPatch("libanogs.so", 0x4AB658, "h00 00 80 D2 C0 03 5F D6", 32);
   showToast("Checking Server  ")
   showToast("Server Found ")
-  showToast("BYPASS ACTIVATED","0xFF00FF00","0xFF0000FF","15","18")
+  showToast("BYPASS ACTIVATED1","0xFF00FF00","0xFF0000FF","15","18")
   task(100, function()
   end)
 end
