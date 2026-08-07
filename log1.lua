@@ -1,3 +1,9 @@
+require "import"
+import "http" -- 🟢 DAGDAG: Para sa stand-alone APK compatibility!
+
+-- Siguraduhin ding parehong Http at http ay accessible
+Http = Http or http
+http = http or Http
 
 require "import"
 import "android.app.*"
