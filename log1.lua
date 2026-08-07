@@ -148,16 +148,13 @@ task(1000, function()
   end
 end)
 
--- Make the app full screen (hide status bar)
-activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
-activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN)
-activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
-
-activity.setTheme(android.R.style.Theme_Material_NoActionBar)
-activity.setContentView(loadlayout(layout))
-activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-activity.getWindow().setStatusBarColor(0xFF000000)
-
+--- I-set lang ang flags nang hindi nire-reset/pinalitan ang Layout kung naka-set na ito
+pcall(function()
+  activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+  activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN)
+  activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+  activity.getWindow().setStatusBarColor(0xFF000000)
+end)
 
 HexPatches = {}
 local targetPkg = "com.garena.game.codm"
