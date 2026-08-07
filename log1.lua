@@ -12,7 +12,6 @@ pcall(function() import "cjson" end)
 json = json or JSON
 cjson = cjson or json
 
--- Fallback kung sakaling walang CJSON o JSON module sa runtime ng APK
 if not cjson or not json then
   pcall(function()
     import "org.json.JSONObject"
@@ -93,27 +92,24 @@ import "android.view.WindowManager"
 import "android.view.Gravity"
 import "android.view.MotionEvent"
 
-
-
-
-
-
-
-
-
-
+-- 🟢 4. SAFE FULLSCREEN & ORIENTATION SETTINGS (NO RE-LAYOUT)
+pcall(function()
+  activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+  activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN)
+  activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+  activity.getWindow().setStatusBarColor(0xFF000000)
+end)
 
 function syncAnnouncement()
-  local url = "https://pastehub-dwp9.onrender.com/raw/SPCTAr6K" -- I-paste ang Raw link mo
+  local url = "https://pastehub-dwp9.onrender.com/raw/SPCTAr6K"
   Http.get(url, nil, "utf-8", nil, function(code, body)
     if code == 200 then
       local status, data = pcall(function() return cjson.decode(body) end)
       if status and data then
-        -- Gamitin ang activity.runOnUiThread para safe sa UI thread
         activity.runOnUiThread(Runnable{
           run=function()
-            announcement_title.Text = data.title
-            announcement_msg.Text = data.message
+            if announcement_title then announcement_title.Text = data.title end
+            if announcement_msg then announcement_msg.Text = data.message end
           end
         })
       end
@@ -121,19 +117,13 @@ function syncAnnouncement()
   end)
 end
 
--- 1. I-load ang layout files
-win_menu = loadlayout(floating) -- Siguraduhin na 'floating' ang filename ng menu mo
+-- 🟢 5. SINGLE INITIALIZATION OF FLOATING & ICON LAYOUTS (FIXED DUPLICATION)
+win_menu = loadlayout(floating)
 win_icon = loadlayout(icon)
 
--- 2. Dito natin ilalagay ang Sync Logic na may DELAY
 task(1000, function()
-  -- I-check kung existing na ang ID bago i-update
   if announcement_title then
-
-    -- Patakbuhin ang Sync mula sa Pastebin
     syncAnnouncement()
-
-    -- Patakbuhin ang Blinking Animation
     import "android.view.animation.AlphaAnimation"
     import "android.view.animation.Animation"
     local blink = AlphaAnimation(1.0, 0.2)
@@ -141,19 +131,7 @@ task(1000, function()
     blink.setRepeatCount(Animation.INFINITE)
     blink.setRepeatMode(Animation.REVERSE)
     announcement_title.startAnimation(blink)
-
-   else
-    -- Kung lumabas ito, check mo ang 'id' sa floating.aly mo
-    print("UI Error: announcement_title not found in layout.")
   end
-end)
-
---- I-set lang ang flags nang hindi nire-reset/pinalitan ang Layout kung naka-set na ito
-pcall(function()
-  activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
-  activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN)
-  activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
-  activity.getWindow().setStatusBarColor(0xFF000000)
 end)
 
 HexPatches = {}
@@ -167,7 +145,7 @@ function HexPatches.MemoryPatch(libName, offset, hexBytes)
   local pid = getProcessId("com.garena.game.codm")
 
   if not pid then
-    idkcstmToast("Error: Cannot find game process")
+    showToast("Error: Cannot find game process")
     return
   end
 
@@ -183,14 +161,14 @@ function HexPatches.MemoryPatch(libName, offset, hexBytes)
   end
 
   if not startAddr then
-    idkcstmToast("Error: Cannot find game process")
+    showToast("Error: Cannot find game process")
     return
   end
 
   local targetAddr = startAddr + offset
   local memFile = io.open(memPath, "r+b")
   if not memFile then
-    idkcstmToast("Error: Cannot find game process")
+    showToast("Error: Cannot find game process")
     return
   end
 
@@ -213,70 +191,32 @@ function getProcessId(processName)
   return nil
 end
 
-function floatToHexLE(float)
-  if float == 0 then return "00000000" end
-  local sign = 0; if float < 0 then sign = 1; float = -float end
-  local mantissa, exponent = math.frexp(float)
-  if float == math.huge then return "0000807F" end
-  exponent = exponent + 126
-  mantissa = (mantissa * 2 - 1) * 0x800000
-  local intVal = (sign << 31) | (exponent << 23) | mantissa
-  local hex = string.format("%08X", intVal)
-  return hex:sub(7,8) .. hex:sub(5,6) .. hex:sub(3,4) .. hex:sub(1,2)
-end
-
--- 🟣 Create background shape for Toast
-function createToastBackground()
-  local gd = GradientDrawable()
-  gd.setShape(GradientDrawable.RECTANGLE)
-  gd.setCornerRadius(20)
-  gd.setColor(0xCC1A1A2F) -- Inner dark translucent purple
-  gd.setStroke(3, 0xFFB48CFF) -- Purple border
-  return gd
-end
-
-function showToast(msg) Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show() end
-
-local wm = activity.getSystemService(Context.WINDOW_SERVICE)
--- ==========================================
--- 1. CRITICAL IMPORTS & INITIALIZATION
--- ==========================================
 local wm = activity.getSystemService(Context.WINDOW_SERVICE)
 local idleHandler = Handler()
 local isMenuOpen = false
-local win_icon = loadlayout(icon)
-local win_menu = loadlayout(floating)
 
--- ==========================================
--- 2. THE RAINBOW BORDER SYSTEM (FIXED)
--- ==========================================
+-- 🟢 6. THE RAINBOW BORDER SYSTEM
 local function applyRainbowBorder(view)
-  -- 1. Setup Colors (White, Pink, Light Blue, then White again)
-  -- Mas manipis na Stroke Width para sa eleganteng look
+  if not view then return end
   local colors = {
-    0xFFFFFFFF, -- White center line
-    0xFFFF00FF, -- Pink glow
-    0xFF00FFEE, -- Light Cyan/Blue glow
-    0xFFFFFFFF -- White loop
+    0xFFFFFFFF,
+    0xFFFF00FF,
+    0xFF00FFEE,
+    0xFFFFFFFF
   }
-
-  -- Para sa RadialGradient, kailangan nating i-convert sa int[] Java array
   local colorArray = int(colors)
-
-  -- 2. Create the Shape
   local shape = ShapeDrawable(OvalShape())
   local paint = shape.getPaint()
 
   paint.setStyle(Paint.Style.STROKE)
-  paint.setStrokeWidth(5) -- Mas manipis na border gaya nung sa pic
+  paint.setStrokeWidth(5)
   paint.setAntiAlias(true)
 
-  -- 3. Animation Logic gamit ang Matrix (Dito iikot ang kulay)
   local matrix = Matrix()
   local animator = ValueAnimator.ofFloat(float{0, 360})
-  animator.setDuration(4000) -- Mas mabagal na ikot
+  animator.setDuration(4000)
   animator.setRepeatCount(ValueAnimator.INFINITE)
-  animator.setInterpolator(nil) -- Smooth constant speed
+  animator.setInterpolator(nil)
 
   animator.addUpdateListener(ValueAnimator.AnimatorUpdateListener{
     onAnimationUpdate = function(a)
@@ -284,12 +224,8 @@ local function applyRainbowBorder(view)
       local w, h = view.getWidth(), view.getHeight()
 
       if w > 0 and h > 0 then
-        -- Eto ang totoong Sweep Gradient para sa circular border
-        -- Gagamit tayo ng SweepGradient para sa paikot na color transition
         import "android.graphics.SweepGradient"
         local shader = SweepGradient(w/2, h/2, colorArray, nil)
-
-        -- I-rotate ang gradient gamit ang Matrix
         matrix.setRotate(angle, w/2, h/2)
         shader.setLocalMatrix(matrix)
 
@@ -302,23 +238,9 @@ local function applyRainbowBorder(view)
   animator.start()
 end
 
--- I-apply agad ang border setup
 if iconf then applyRainbowBorder(iconf) end
 
--- ==========================================
--- 4. IDLE BLUR SYSTEM
--- ==========================================
-local win_icon = loadlayout(icon)
-local win_menu = loadlayout(floating)
-
--- I-apply ang rainbow border sa 'iconf' (CardView sa icon.aly)
-if iconf then
-  applyRainbowBorder(iconf)
-end
-
--- ==========================================
--- 4. IDLE BLUR SYSTEM
--- ==========================================
+-- 🟢 7. IDLE BLUR SYSTEM
 local idleRunnable = Runnable({
   run = function()
     if not isMenuOpen and win_icon then
@@ -333,43 +255,40 @@ local function resetIdleTimer()
   idleHandler.postDelayed(idleRunnable, 5000)
 end
 
--- ==========================================
--- 4. WINDOW PARAMETERS
--- ==========================================
+-- 🟢 8. WINDOW PARAMETERS & DRAG LOGIC
 local function getParams(x, y)
   local p = WindowManager.LayoutParams()
-  p.format = PixelFormat.RGBA_8888; p.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+  p.format = PixelFormat.RGBA_8888
+  p.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
   p.type = (Build.VERSION.SDK_INT >= 26) and WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY or WindowManager.LayoutParams.TYPE_PHONE
-  p.width = WindowManager.LayoutParams.WRAP_CONTENT; p.height = WindowManager.LayoutParams.WRAP_CONTENT
-  p.gravity = Gravity.TOP | Gravity.LEFT; p.x = x; p.y = y
+  p.width = WindowManager.LayoutParams.WRAP_CONTENT
+  p.height = WindowManager.LayoutParams.WRAP_CONTENT
+  p.gravity = Gravity.TOP | Gravity.LEFT
+  p.x = x
+  p.y = y
   return p
 end
 
-local p_menu = getParams(0, 0); local p_icon = getParams(0, 100)
+local p_menu = getParams(0, 0)
+local p_icon = getParams(0, 100)
 
--- ==========================================
--- 5. DRAG & CLICK LOGIC (Win_minWindow)
--- ==========================================
 function createDragListener(wp, lv, cb)
   local ix, iy, itx, ity, idrag = 0,0,0,0,false
   return function(v, ev)
     local a = ev.getAction()
-
-    -- ETO ANG DAGDAG: Gisingin ang icon tuwing may touch
     resetIdleTimer()
 
     if a == MotionEvent.ACTION_DOWN then
       ix, iy, itx, ity, idrag = wp.x, wp.y, ev.getRawX(), ev.getRawY(), false
       return true
-     elseif a == MotionEvent.ACTION_MOVE then
+    elseif a == MotionEvent.ACTION_MOVE then
       local dx, dy = ev.getRawX() - itx, ev.getRawY() - ity
       wp.x, wp.y = ix + dx, iy + dy
       wm.updateViewLayout(lv, wp)
       if math.abs(dx)>10 or math.abs(dy)>10 then idrag = true end
       return true
-     elseif a == MotionEvent.ACTION_UP then
+    elseif a == MotionEvent.ACTION_UP then
       if not idrag and cb then
-        -- Kapag binuksan ang menu, itigil ang countdown para hindi lumabo
         idleHandler.removeCallbacks(idleRunnable)
         cb()
       end
@@ -379,65 +298,37 @@ function createDragListener(wp, lv, cb)
   end
 end
 
-Win_minWindow.setOnTouchListener(createDragListener(p_icon, win_icon, function()
-  isMenuOpen = true
-  wm.removeView(win_icon)
-  wm.addView(win_menu, p_menu)
-end))
-
-fl.setOnTouchListener(createDragListener(p_menu, win_menu, nil))
-
--- ==========================================
--- 6. MENU CONTROLS
--- ==========================================
-t1.onClick = function()
-  isMenuOpen = false
-  wm.removeView(win_menu)
-  wm.addView(win_icon, p_icon)
-
-  -- ETO ANG DAGDAG: Simulan ulit ang idle countdown
-  resetIdleTimer()
+if Win_minWindow then
+  Win_minWindow.setOnTouchListener(createDragListener(p_icon, win_icon, function()
+    isMenuOpen = true
+    wm.removeView(win_icon)
+    wm.addView(win_menu, p_menu)
+  end))
 end
 
-toggleIconVisibility.onClick = function()
-  if menufloating.getAlpha() == 1.0 then
-    menufloating.setAlpha(0.0)
-    toggleIconVisibility.setColorFilter(0xFFFFFFFF)
-    print("Icon hidden - Remember the eye position!")
-   else
-    menufloating.setAlpha(1.0)
-    toggleIconVisibility.setColorFilter(0xFF00FFEE)
+if fl then
+  fl.setOnTouchListener(createDragListener(p_menu, win_menu, nil))
+end
+
+-- 🟢 9. MENU CONTROLS
+if t1 then
+  t1.onClick = function()
+    isMenuOpen = false
+    wm.removeView(win_menu)
+    wm.addView(win_icon, p_icon)
+    resetIdleTimer()
   end
 end
 
--- ==========================================
--- 7. THE TRIGGER FUNCTION (PARA SA LOGIN.LUA)
--- ==========================================
-
-
--- WALA NANG WM.ADDVIEW DITO SA BABA PARA HINDI LALABAS AGAD!
-
-function antiC4droid()
-  local targetPackageName = "com.n0n3m4.droidc"
-
-  local activityManager = activity.getSystemService("activity")
-  local runningApps = activityManager.getRunningAppProcesses()
-
-  local isRunning = false
-  if runningApps ~= nil then
-    for i = 0, runningApps.size() - 1 do
-      local appInfo = runningApps.get(i)
-      if appInfo.processName == targetPackageName then
-        isRunning = true
-        break
-      end
+if toggleIconVisibility then
+  toggleIconVisibility.onClick = function()
+    if menufloating and menufloating.getAlpha() == 1.0 then
+      menufloating.setAlpha(0.0)
+      toggleIconVisibility.setColorFilter(0xFFFFFFFF)
+    elseif menufloating then
+      menufloating.setAlpha(1.0)
+      toggleIconVisibility.setColorFilter(0xFF00FFEE)
     end
-  end
-
-  if isRunning then
-    idkcstmToast("Error: Cannot attach to mainCode5.nil")
-    LayoutVIP.removeView(mainWindow)
-    LayoutVIP.removeView(minWindow)
   end
 end
 
@@ -445,21 +336,22 @@ local ac, ic = 0xFF00FFEE, 0xFF888888
 local dens = activity.getResources().getDisplayMetrics().density
 
 local function rTabs()
-  page_1.setVisibility(8)
-  page_2.setVisibility(8)
-  page_3.setVisibility(8)
-  page_4.setVisibility(8)
+  if page_1 then page_1.setVisibility(8) end
+  if page_2 then page_2.setVisibility(8) end
+  if page_3 then page_3.setVisibility(8) end
+  if page_4 then page_4.setVisibility(8) end
 
-  txt_tab1.setTextColor(ic)
-  txt_tab2.setTextColor(ic)
-  txt_tab3.setTextColor(ic)
-  txt_tab4.setTextColor(ic)
+  if txt_tab1 then txt_tab1.setTextColor(ic) end
+  if txt_tab2 then txt_tab2.setTextColor(ic) end
+  if txt_tab3 then txt_tab3.setTextColor(ic) end
+  if txt_tab4 then txt_tab4.setTextColor(ic) end
 end
 
-function switchTab1() rTabs(); page_1.setVisibility(0); txt_tab1.setTextColor(ac); tab_indicator.setTranslationX(0) end
-function switchTab2() rTabs(); page_2.setVisibility(0); txt_tab2.setTextColor(ac); tab_indicator.setTranslationX(85*dens) end
-function switchTab3() rTabs(); page_3.setVisibility(0); txt_tab3.setTextColor(ac); tab_indicator.setTranslationX(170*dens) end
-function switchTab4() rTabs(); page_4.setVisibility(0); txt_tab4.setTextColor(ac); tab_indicator.setTranslationX(255*dens) end
+function switchTab1() rTabs(); if page_1 then page_1.setVisibility(0) end; if txt_tab1 then txt_tab1.setTextColor(ac) end; if tab_indicator then tab_indicator.setTranslationX(0) end end
+function switchTab2() rTabs(); if page_2 then page_2.setVisibility(0) end; if txt_tab2 then txt_tab2.setTextColor(ac) end; if tab_indicator then tab_indicator.setTranslationX(85*dens) end end
+function switchTab3() rTabs(); if page_3 then page_3.setVisibility(0) end; if txt_tab3 then txt_tab3.setTextColor(ac) end; if tab_indicator me then tab_indicator.setTranslationX(170*dens) end end
+function switchTab4() rTabs(); if page_4 then page_4.setVisibility(0) end; if txt_tab4 then txt_tab4.setTextColor(ac) end; if tab_indicator then tab_indicator.setTranslationX(255*dens) end end
+
 
 -- 🟢 FIX: Pinalitan ng txt_tab5 ang txt_tab4 para sumindi ang tamang kulay ng tab text
 
