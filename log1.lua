@@ -92,6 +92,61 @@ import "android.view.WindowManager"
 import "android.view.Gravity"
 import "android.view.MotionEvent"
 
+-- 🟢 10. AUTO-CHECK LICENSE EXPIRATION ON STARTUP
+local pref = activity.getSharedPreferences("config", Context.MODE_PRIVATE)
+
+task(500, function()
+  pcall(function()
+    local savedKey = pref.getString("key", "https://server-vu9x.onrender.com")
+    if savedKey ~= "" then
+      local base_url = ""
+      local verifyUrl = base_url .. "/verify?key=" .. savedKey .. "&device=" .. (device or "unknown")
+      
+      Http.get(verifyUrl, nil, "utf-8", nil, function(code, body)
+        if code == 200 and body then
+          local status, resData = pcall(function() return cjson.decode(body) end)
+          if status and resData then
+            activity.runOnUiThread(function()
+              if resData.status == "valid" then
+                if statusText then
+                  statusText.setText("ONLINE / READY")
+                  statusText.setTextColor(0xFF00FF88)
+                end
+                if keyExpiry then
+                  local expireStr = resData.expire_str or resData.expires_in
+                  if expireStr and tostring(expireStr) ~= "" then
+                    keyExpiry.setText("Key Expire: " .. tostring(expireStr))
+                  else
+                    keyExpiry.setText("Key Expire: Premium Active")
+                  end
+                end
+              else
+                if statusText then
+                  statusText.setText("KEY EXPIRED / INVALID")
+                  statusText.setTextColor(0xFFFF4444)
+                end
+                if keyExpiry then
+                  keyExpiry.setText("Key Expire: Expired")
+                end
+              end
+            end)
+          end
+        end
+      end)
+    else
+      activity.runOnUiThread(function()
+        if statusText then
+          statusText.setText("NO SAVED KEY")
+          statusText.setTextColor(0xFFFF4444)
+        end
+        if keyExpiry then
+          keyExpiry.setText("Key Expire: None")
+        end
+      end)
+    end
+  end)
+end)
+
 function syncAnnouncement()
   local url = "https://pastehub-dwp9.onrender.com/raw/SPCTAr6K"
   Http.get(url, nil, "utf-8", nil, function(code, body)
