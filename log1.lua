@@ -92,14 +92,6 @@ import "android.view.WindowManager"
 import "android.view.Gravity"
 import "android.view.MotionEvent"
 
--- 🟢 4. SAFE FULLSCREEN & ORIENTATION SETTINGS (NO RE-LAYOUT)
-pcall(function()
-  activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
-  activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN)
-  activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
-  activity.getWindow().setStatusBarColor(0xFF000000)
-end)
-
 function syncAnnouncement()
   local url = "https://pastehub-dwp9.onrender.com/raw/SPCTAr6K"
   Http.get(url, nil, "utf-8", nil, function(code, body)
@@ -134,6 +126,16 @@ task(1000, function()
   end
 end)
 
+-- Make the app full screen (hide status bar)
+activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN)
+activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+
+activity.setTheme(android.R.style.Theme_Material_NoActionBar)
+activity.setContentView(loadlayout(layout))
+activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+activity.getWindow().setStatusBarColor(0xFF000000)
+
 HexPatches = {}
 local targetPkg = "com.garena.game.codm"
 
@@ -145,7 +147,7 @@ function HexPatches.MemoryPatch(libName, offset, hexBytes)
   local pid = getProcessId("com.garena.game.codm")
 
   if not pid then
-    showToast("Error: Cannot find game process")
+    idkcstmToast("Error: Cannot find game process")
     return
   end
 
@@ -161,14 +163,14 @@ function HexPatches.MemoryPatch(libName, offset, hexBytes)
   end
 
   if not startAddr then
-    showToast("Error: Cannot find game process")
+    idkcstmToast("Error: Cannot find game process")
     return
   end
 
   local targetAddr = startAddr + offset
   local memFile = io.open(memPath, "r+b")
   if not memFile then
-    showToast("Error: Cannot find game process")
+    idkcstmToast("Error: Cannot find game process")
     return
   end
 
@@ -202,6 +204,17 @@ function getProcessId(processName)
   end
   return nil
 end
+
+-- 🟣 Create background shape for Toast
+function createToastBackground()
+  local gd = GradientDrawable()
+  gd.setShape(GradientDrawable.RECTANGLE)
+  gd.setCornerRadius(20)
+  gd.setColor(0xCC1A1A2F) -- Inner dark translucent purple
+  gd.setStroke(3, 0xFFB48CFF) -- Purple border
+  return gd
+end
+
 
 local wm = activity.getSystemService(Context.WINDOW_SERVICE)
 local idleHandler = Handler()
