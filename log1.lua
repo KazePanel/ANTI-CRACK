@@ -857,35 +857,6 @@ function waitForGameAndLib(libName, callback)
   check()
 end
 
-bypass1.ButtonDrawable.setColorFilter(PorterDuffColorFilter(0xFF00FFEE, PorterDuff.Mode.SRC_ATOP))
-function bypass1.OnCheckedChangeListener()
-  if bypass1.checked then
-  HexPatches.MemoryPatch("libanogs.so", 0x204218, "h00 00 80 D2 C0 03 5F D6", 32);
-  HexPatches.MemoryPatch("libanogs.so", 0x258B6C, "h00 00 80 D2 C0 03 5F D6", 32);
-  HexPatches.MemoryPatch("libanogs.so", 0x259670, "h00 00 80 D2 C0 03 5F D6", 32);
-  HexPatches.MemoryPatch("libanogs.so", 0x3055A0, "h00 00 80 D2 C0 03 5F D6", 32);
-  HexPatches.MemoryPatch("libanogs.so", 0x3075C4, "h00 00 80 D2 C0 03 5F D6", 32);
-  HexPatches.MemoryPatch("libanogs.so", 0x307764, "h00 00 80 D2 C0 03 5F D6", 32);
-  HexPatches.MemoryPatch("libanogs.so", 0x30E234, "h00 00 80 D2 C0 03 5F D6", 32);
-  HexPatches.MemoryPatch("libanogs.so", 0x40F360, "h00 00 80 D2 C0 03 5F D6", 32);
-  HexPatches.MemoryPatch("libanogs.so", 0x4102B4, "h00 00 80 D2 C0 03 5F D6", 32);
-  HexPatches.MemoryPatch("libanogs.so", 0x44BC90, "h00 00 80 D2 C0 03 5F D6", 32);
-  HexPatches.MemoryPatch("libanogs.so", 0x497E64, "h00 00 80 D2 C0 03 5F D6", 32);
-  --Group2
-  HexPatches.MemoryPatch("libanogs.so", 0x1CD564, "h00 00 80 D2 C0 03 5F D6", 32);
-  HexPatches.MemoryPatch("libanogs.so", 0x2449D4, "h00 00 80 D2 C0 03 5F D6", 32);
-  HexPatches.MemoryPatch("libanogs.so", 0x37C418, "h00 00 80 D2 C0 03 5F D6", 32);
-  HexPatches.MemoryPatch("libanogs.so", 0x4F5B38, "h00 00 80 D2 C0 03 5F D6", 32);
-  HexPatches.MemoryPatch("libanogs.so", 0x4ABE38, "h00 00 80 D2 C0 03 5F D6", 32);
-  HexPatches.MemoryPatch("libanogs.so", 0x4A9D18, "h00 00 80 D2 C0 03 5F D6", 32);
-  HexPatches.MemoryPatch("libanogs.so", 0x403EAC, "h00 00 80 D2 C0 03 5F D6", 32);
-  HexPatches.MemoryPatch("libanogs.so", 0x4AB658, "h00 00 80 D2 C0 03 5F D6", 32);
-  showToast("Checking Server  ")
-  showToast("Server Found ")
-  showToast("BYPASS ACTIVATED2","0xFF00FF00","0xFF0000FF","15","18")
-  end
-end
-
 -- Auto Bypass Function
 function autoBypass()
   HexPatches.MemoryPatch("libanogs.so", 0x204218, "h00 00 80 D2 C0 03 5F D6", 32);
@@ -910,7 +881,7 @@ function autoBypass()
   HexPatches.MemoryPatch("libanogs.so", 0x4AB658, "h00 00 80 D2 C0 03 5F D6", 32);
   showToast("Checking Server  ")
   showToast("Server Found ")
-  showToast("BYPASS ACTIVATED1","0xFF00FF00","0xFF0000FF","15","18")
+  showToast("BYPASS ACTIVATED","0xFF00FF00","0xFF0000FF","15","18")
   task(100, function()
   end)
 end
