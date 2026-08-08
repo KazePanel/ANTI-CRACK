@@ -1012,7 +1012,7 @@ function showLockDialog(msg)
 
 end
 
-Start.onClick = function()
+start.onClick = function()
 
   local status, message = getPasteStatus()
 
@@ -1026,22 +1026,21 @@ Start.onClick = function()
   showToast("Started")
 
   local pm = activity.getPackageManager()
-  
-  -- 🟢 PALITAN ITO: Ilagay dito ang package name ng Virtual App / Clone mo
-  -- Halimbawa kung ang clone/virtual app mo ay com.chess.mobile:
-  local clonePkg = "com.garena.game.codm"
-  local intent = pm.getLaunchIntentForPackage(clonePkg)
+  local intent = pm.getLaunchIntentForPackage("com.garena.game.codm")
 
   if intent then
+
     activity.startActivity(intent)
-    idkcstmToast("Launching Cloned CODM...")
+    idkcstmToast("Launching CODM...")
 
     task(3000, function()
       startCODMDetector()
     end)
 
    else
-    idkcstmToast("Virtual App / Clone not installed!")
+
+    idkcstmToast("CODM not installed")
+
   end
 
 end
