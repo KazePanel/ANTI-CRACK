@@ -1015,15 +1015,15 @@ end
 -- Siguraduhing maliit ang 'start' kung ganyan ang ID sa layout mo, o sundin ang tamang case
 start.onClick = function()
 
+  -- 🟢 1. UNAHING ILABAS AGAD ANG TOAST Bago ang kahit anong proseso
+  showCustomToast("⏳ Please wait, Opening...", 0xFF141A24, 0xFF00FFEE)
+
   local status, message = getPasteStatus()
 
   if status ~= "OPEN" then
     showLockDialog(message)
     return
   end
-
-  -- 🟢 DITO NATIN ILAGAY PARA LUMABAS AGAD ANG "PLEASE WAIT"
-  showCustomToast("⏳ Please wait, Opening...", 0xFF141A24, 0xFF00FFEE)
 
   -- I-delay nang konti ang pag-add ng view para hindi ma-block ang touch event ng button
   task(50, function()
@@ -1042,8 +1042,6 @@ start.onClick = function()
 
   if intent then
     activity.startActivity(intent)
-    -- Ginamit mo rin ang custom toast dito para sa launching
-    showCustomToast("🚀 Launching Cloned CODM...", 0xFF141A24, 0xFF00FFEE)
 
     task(3000, function()
       startCODMDetector()
@@ -1054,6 +1052,7 @@ start.onClick = function()
   end
 
 end
+
 
 
 
