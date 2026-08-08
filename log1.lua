@@ -1042,38 +1042,36 @@ function showLockDialog(msg)
 end
 
 -- Siguraduhing maliit ang 'start' kung ganyan ang ID sa layout mo, o sundin ang tamang case
-if start then
-  start.onClick = function()
-    showCustomToast("⏳ Please wait, Initializing...", 0xFF141A24, 0xFF00FFEE)
+start.onClick = function()
+  showCustomToast("⏳ Please wait, Initializing...", 0xFF141A24, 0xFF00FFEE)
 
-    local status, message = getPasteStatus()
-    if status ~= "OPEN" then
-      showLockDialog(message)
-      return
-    end
+  local status, message = getPasteStatus()
+  if status ~= "OPEN" then
+    showLockDialog(message)
+    return
+  end
 
-    -- Laging ilabas ang floating icon
-    task(50, function()
-      pcall(function() wm.addView(win_icon, p_icon) end)
-    end)
-    
-    isMenuOpen = false
+  -- Ipakita palagi ang floating icon
+  task(50, function()
+    pcall(function() wm.addView(win_icon, p_icon) end)
+  end)
+  
+  isMenuOpen = false
 
-    -- Dito na susundin kung naka-on o naka-off ang toggle
-    if isAutoOpen then
-      local pm = activity.getPackageManager()
-      local clonePkg = "com.garena.game.codm"
-      local intent = pm.getLaunchIntentForPackage(clonePkg)
+  -- Dito gagamitin yung logic base sa toggle
+  if isAutoOpen then
+    local pm = activity.getPackageManager()
+    local clonePkg = "com.garena.game.codm"
+    local intent = pm.getLaunchIntentForPackage(clonePkg)
 
-      if intent then
-        activity.startActivity(intent)
-        task(3000, function() startCODMDetector() end)
-      else
-        showCustomToast("❌ CODM not found!", 0xFF141A24, 0xFFFF5252)
-      end
+    if intent then
+      activity.startActivity(intent)
+      task(3000, function() startCODMDetector() end)
     else
-      showCustomToast("✅ Floating Icon Loaded!", 0xFF141A24, 0xFF00FFEE)
+      showCustomToast("❌ CODM not found!", 0xFF141A24, 0xFFFF5252)
     end
+  else
+    showCustomToast("✅ Floating Icon Ready!", 0xFF141A24, 0xFF00FFEE)
   end
 end
 
