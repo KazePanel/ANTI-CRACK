@@ -1046,22 +1046,20 @@ start.onClick = function()
   showCustomToast("⏳ Please wait, Initializing...", 0xFF141A24, 0xFF00FFEE)
 
   local status, message = getPasteStatus()
-
   if status ~= "OPEN" then
     showLockDialog(message)
     return
   end
 
-  -- Laging i-add ang floating icon (floating mode)
+  -- Ipakita palagi ang floating icon
   task(50, function()
     pcall(function() wm.addView(win_icon, p_icon) end)
   end)
   
   isMenuOpen = false
 
-  -- DITO ANG BAGONG LOGIC:
-  if autoOpenMode then
-    -- KAPAG NAKA-ON: Mag-a-auto open sa CODM
+  -- Dito gagamitin yung logic base sa toggle
+  if isAutoOpen then
     local pm = activity.getPackageManager()
     local clonePkg = "com.garena.game.codm"
     local intent = pm.getLaunchIntentForPackage(clonePkg)
@@ -1073,10 +1071,10 @@ start.onClick = function()
       showCustomToast("❌ CODM not found!", 0xFF141A24, 0xFFFF5252)
     end
   else
-    -- KAPAG NAKA-OFF: Floating icon lang, hindi na bubuksan ang app
-    showCustomToast("✅ Floating Icon Loaded!", 0xFF141A24, 0xFF00FFEE)
+    showCustomToast("✅ Floating Icon Ready!", 0xFF141A24, 0xFF00FFEE)
   end
 end
+
 
 
 
