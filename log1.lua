@@ -1012,6 +1012,7 @@ function showLockDialog(msg)
 
 end
 
+-- Siguraduhing maliit ang 'start' kung ganyan ang ID sa layout mo, o sundin ang tamang case
 start.onClick = function()
 
   local status, message = getPasteStatus()
@@ -1021,29 +1022,36 @@ start.onClick = function()
     return
   end
 
-  wm.addView(win_icon, p_icon)
+  -- I-delay nang konti ang pag-add ng view para hindi ma-block ang touch event ng button
+  task(50, function()
+    pcall(function()
+      wm.addView(win_icon, p_icon)
+    end)
+  end)
+  
   isMenuOpen = false
   showToast("Started")
 
   local pm = activity.getPackageManager()
-  local intent = pm.getLaunchIntentForPackage("com.garena.game.codm")
+  
+  -- Package name ng Virtual App / Clone mo
+  local clonePkg = "com.garena.game.codm"
+  local intent = pm.getLaunchIntentForPackage(clonePkg)
 
   if intent then
-
     activity.startActivity(intent)
-    idkcstmToast("Launching CODM...")
+    idkcstmToast("Launching Cloned CODM...")
 
     task(3000, function()
       startCODMDetector()
     end)
 
    else
-
-    idkcstmToast("CODM not installed")
-
+    idkcstmToast("Virtual App / Clone not installed!")
   end
 
 end
+
 
 
 
