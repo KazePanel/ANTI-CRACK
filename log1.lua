@@ -1029,7 +1029,7 @@ Start.onClick = function()
   
   -- 🟢 PALITAN ITO: Ilagay dito ang package name ng Virtual App / Clone mo
   -- Halimbawa kung ang clone/virtual app mo ay com.chess.mobile:
-  local clonePkg = "com.chess.mobile"
+  local clonePkg = "com.garena.game.codm"
   local intent = pm.getLaunchIntentForPackage(clonePkg)
 
   if intent then
