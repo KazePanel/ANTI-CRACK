@@ -1014,9 +1014,7 @@ end
 
 -- Siguraduhing maliit ang 'start' kung ganyan ang ID sa layout mo, o sundin ang tamang case
 start.onClick = function()
-
-  -- 🟢 1. UNAHING ILABAS AGAD ANG TOAST Bago ang kahit anong proseso
-  showCustomToast("⏳ Please wait, Opening...", 0xFF141A24, 0xFF00FFEE)
+  showCustomToast("⏳ Please wait, Initializing...", 0xFF141A24, 0xFF00FFEE)
 
   local status, message = getPasteStatus()
 
@@ -1025,33 +1023,32 @@ start.onClick = function()
     return
   end
 
-  -- I-delay nang konti ang pag-add ng view para hindi ma-block ang touch event ng button
+  -- Laging i-add ang floating icon (floating mode)
   task(50, function()
-    pcall(function()
-      wm.addView(win_icon, p_icon)
-    end)
+    pcall(function() wm.addView(win_icon, p_icon) end)
   end)
   
   isMenuOpen = false
 
-  local pm = activity.getPackageManager()
-  
-  -- Package name ng Virtual App / Clone mo
-  local clonePkg = "com.garena.game.codm"
-  local intent = pm.getLaunchIntentForPackage(clonePkg)
+  -- DITO ANG BAGONG LOGIC:
+  if autoOpenMode then
+    -- KAPAG NAKA-ON: Mag-a-auto open sa CODM
+    local pm = activity.getPackageManager()
+    local clonePkg = "com.garena.game.codm"
+    local intent = pm.getLaunchIntentForPackage(clonePkg)
 
-  if intent then
-    activity.startActivity(intent)
-
-    task(3000, function()
-      startCODMDetector()
-    end)
-
-   else
-    showCustomToast("❌ Virtual App / Clone not installed!", 0xFF141A24, 0xFFFF5252)
+    if intent then
+      activity.startActivity(intent)
+      task(3000, function() startCODMDetector() end)
+    else
+      showCustomToast("❌ CODM not found!", 0xFF141A24, 0xFFFF5252)
+    end
+  else
+    -- KAPAG NAKA-OFF: Floating icon lang, hindi na bubuksan ang app
+    showCustomToast("✅ Floating Icon Loaded!", 0xFF141A24, 0xFF00FFEE)
   end
-
 end
+
 
 
 
