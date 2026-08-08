@@ -1022,6 +1022,9 @@ start.onClick = function()
     return
   end
 
+  -- 🟢 DITO NATIN ILAGAY PARA LUMABAS AGAD ANG "PLEASE WAIT"
+  showCustomToast("⏳ Please wait, Opening...", 0xFF141A24, 0xFF00FFEE)
+
   -- I-delay nang konti ang pag-add ng view para hindi ma-block ang touch event ng button
   task(50, function()
     pcall(function()
@@ -1030,7 +1033,6 @@ start.onClick = function()
   end)
   
   isMenuOpen = false
-  showToast("Started")
 
   local pm = activity.getPackageManager()
   
@@ -1040,17 +1042,19 @@ start.onClick = function()
 
   if intent then
     activity.startActivity(intent)
-    idkcstmToast("Launching Cloned CODM...")
+    -- Ginamit mo rin ang custom toast dito para sa launching
+    showCustomToast("🚀 Launching Cloned CODM...", 0xFF141A24, 0xFF00FFEE)
 
     task(3000, function()
       startCODMDetector()
     end)
 
    else
-    idkcstmToast("Virtual App / Clone not installed!")
+    showCustomToast("❌ Virtual App / Clone not installed!", 0xFF141A24, 0xFFFF5252)
   end
 
 end
+
 
 
 
