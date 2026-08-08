@@ -1074,7 +1074,7 @@ import "android.widget.Toast"
 import "android.graphics.drawable.GradientDrawable"
 import "java.io.File"
 
-clearCache.onClick = function()
+clearCacheBtn.onClick = function()
 
   -- Create dialog
   local dialog = ProgressDialog(activity)
