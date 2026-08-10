@@ -912,7 +912,7 @@ import "android.widget.TextView"
 import "android.widget.Button"
 import "android.view.Gravity"
 
-local pastebinRaw = "https://pastehub-dwp9.onrender.com/raw/Oy5QPDVl"
+local pastebinRaw = "https://pastehub-dwp9.onrender.com/raw/QaPO7hqx"
 
 function getPasteStatus()
 
